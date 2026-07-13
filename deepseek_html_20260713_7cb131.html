@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 игр казино</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui; }
+        body { background: #1a1a2e; color: white; padding: 20px; max-width: 500px; margin: auto; }
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+        .game-btn { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .game-btn:hover { background: #0f3460; }
+        .game-btn .icon { font-size: 28px; }
+        .game-btn .name { font-size: 12px; margin-top: 6px; opacity: 0.8; }
+        #gameArea { background: #0f0f23; border-radius: 16px; padding: 20px; margin-top: 20px; min-height: 200px; }
+        .bet-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
+        input, button { padding: 10px; border-radius: 8px; border: none; font-size: 16px; }
+        input { flex: 1; min-width: 80px; background: #2a2a4a; color: white; }
+        button { background: #e94560; color: white; font-weight: bold; cursor: pointer; }
+        button:active { transform: scale(0.95); }
+        .result { font-size: 20px; margin: 12px 0; text-align: center; }
+        .balance { font-size: 18px; background: #16213e; padding: 10px; border-radius: 12px; text-align: center; }
+        canvas { border-radius: 12px; display: block; margin: 10px auto; background: #0a0a1a; }
+        .controls { text-align: center; margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+<div class="balance">💰 Баланс: <span id="balanceVal">1000</span> монет</div>
+
+<div class="game-grid">
+    <div class="game-btn" onclick="startGame('roulette')"><div class="icon">🎡</div><div class="name">Рулетка</div></div>
+    <div class="game-btn" onclick="startGame('slots')"><div class="icon">🎰</div><div class="name">Слоты</div></div>
+    <div class="game-btn" onclick="startGame('dice')"><div class="icon">🎲</div><div class="name">Кости</div></div>
+    <div class="game-btn" onclick="startGame('coin')"><div class="icon">🪙</div><div class="name">Орёл/Решка</div></div>
+    <div class="game-btn" onclick="startGame('blackjack')"><div class="icon">🃏</div><div class="name">Блэкджек</div></div>
+    <div class="game-btn" onclick="startGame('keno')"><div class="icon">🎯</div><div class="name">Кено</div></div>
+    <div class="game-btn" onclick="startGame('poker')"><div class="icon">♠️</div><div class="name">Покер</div></div>
+    <div class="game-btn" onclick="startGame('wheel')"><div class="icon">🎡</div><div class="name">Колесо</div></div>
+    <div class="game-btn" onclick="startGame('bulls')"><div class="icon">🐂</div><div class="name">Быки/Коровы</div></div>
+    <div class="game-btn" onclick="startGame('crypto')"><div class="icon">📈</div><div class="name">Крипто</div></div>
+</div>
+
+<div id="gameArea">
+    <p style="opacity:0.5;text-align:center;">Выбери игру выше 👆</p>
+</div>
+
+<script>
+    let balance = 1000;
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    function updateBalance() {
+        document.getElementById('balanceVal').innerText = balance;
+    }
+
+    function placeBet(minBet = 10) {
+        const betInput = document.getElementById('betInput');
+        if (!betInput) return null;
+        const bet = parseInt(betInput.value);
+        if (isNaN(bet) || bet < minBet || bet > balance) {
+            alert(`Ставка должна быть от ${minBet} до ${balance}`);
+            return null;
+        }
+        balance -= bet;
+        updateBalance();
+        return bet;
+    }
+
+    function showResult(text, isWin) {
+        const el = document.getElementById('gameResult');
+        if (el) {
+            el.innerHTML = text;
+            el.style.color = isWin ? '#4caf50' : '#ff4757';
+        }
+    }
+
+    // === ЗАПУСК ИГРЫ ===
+    function startGame(game) {
+        const area = document.getElementById('gameArea');
+        let html = `<h3 style="text-align:center;">${game.toUpperCase()}</h3><div class="bet-row"><input id="betInput" type="number" value="10" min="1"> <button onclick="play_${game}()">Играть</button></div><div id="gameResult" class="result"></div><div id="gameCanvas"></div>`;
+        area.innerHTML = html;
+        
+        // Если рулетка - рисуем
+        if (game === 'roulette') {
+            setTimeout(drawRoulette, 100);
+        }
+    }
+
+    // === РУЛЕТКА С АНИМАЦИЕЙ ===
+    let rouletteAngle = 0;
+    let spinning = false;
+
+    function drawRoulette(angle = 0) {
+        const container = document.getElementById('gameCanvas');
+        if (!container) return;
+        container.innerHTML = '';
+        const canvas = document.createElement('canvas');
+        canvas.width = 300;
+        canvas.height = 300;
+        container.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        const cx = 150, cy = 150, radius = 130;
+
+        // Сектора (37 секторов)
+        const numbers = [];
+        for (let i = 0; i < 37; i++) numbers.push(i);
+        const colors = numbers.map(n => {
+            if (n === 0) return '#2ecc71';
+            if (n % 2 === 0) return '#2c3e50';
+            return '#e74c3c';
+        });
+
+        const segAngle = (Math.PI * 2) / 37;
+        ctx.clearRect(0, 0, 300, 300);
+
+        // Рисуем сектора
+        for (let i = 0; i < 37; i++) {
+            const start = angle + i * segAngle;
+            const end = start + segAngle;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, start, end);
+            ctx.closePath();
+            ctx.fillStyle = colors[i];
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Номер
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(start + segAngle/2);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'white';
+            ctx.font = '10px Arial';
+            ctx.fillText(numbers[i], radius * 0.75, 0);
+            ctx.restore();
+        }
+
+        // Центр
+        ctx.beginPath();
+        ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+        ctx.fillStyle = '#f1c40f';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Стрелка (сверху)
+        ctx.beginPath();
+        ctx.moveTo(cx - 10, 10);
+        ctx.lineTo(cx + 10, 10);
+        ctx.lineTo(cx, 0);
+        ctx.closePath();
+        ctx.fillStyle = '#ff6b6b';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    function spinRoulette() {
+        if (spinning) return;
+        spinning = true;
+        
+        const bet = placeBet(10);
+        if (!bet) {
+            spinning = false;
+            return;
+        }
+
+        const targetNumber = Math.floor(Math.random() * 37);
+        const targetAngle = (targetNumber / 37) * Math.PI * 2;
+        const spins = 5 + Math.random() * 3;
+        const totalRotation = spins * Math.PI * 2 + (Math.PI * 2 - targetAngle);
+        
+        const startAngle = rouletteAngle;
+        const duration = 3000 + Math.random() * 1000;
+        const startTime = Date.now();
+
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const currentAngle = startAngle + totalRotation * eased;
+            rouletteAngle = currentAngle;
+            
+            drawRoulette(currentAngle);
+            
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                // Результат
+                const colors = ['зелёный', 'красный', 'чёрный'];
+                const color = targetNumber === 0 ? 'зелёный' : (targetNumber % 2 === 0 ? 'чёрный' : 'красный');
+                const win = (targetNumber === 7) ? bet * 10 : (targetNumber % 2 === 0 ? bet * 1.5 : 0);
+                balance += win;
+                updateBalance();
+                showResult(`🎡 Выпало: ${targetNumber} (${color}) ${win > 0 ? '✅ +' + win : '❌ проигрыш'}`, win > 0);
+                spinning = false;
+            }
+        }
+        animate();
+    }
+
+    window.play_roulette = function() {
+        spinRoulette();
+    };
+
+    // === ОСТАЛЬНЫЕ ИГРЫ ===
+
+    // 2. Слоты
+    window.play_slots = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const emojis = ['🍒','🍋','🍊','🍇','🔔','💎'];
+        const reels = [emojis[Math.floor(Math.random()*6)], emojis[Math.floor(Math.random()*6)], emojis[Math.floor(Math.random()*6)]];
+        const win = (reels[0] === reels[1] && reels[1] === reels[2]) ? bet * 5 : (reels[0] === reels[1] ? bet * 1.5 : 0);
+        balance += win;
+        updateBalance();
+        showResult(`🎰 ${reels.join(' ')} ${win > 0 ? '✅ +' + win : '❌ проигрыш'}`, win > 0);
+    };
+
+    // 3. Кости
+    window.play_dice = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const d1 = Math.floor(Math.random()*6)+1, d2 = Math.floor(Math.random()*6)+1;
+        const sum = d1+d2;
+        const win = (sum >= 8) ? bet * 2 : 0;
+        balance += win;
+        updateBalance();
+        showResult(`🎲 ${d1}+${d2}=${sum} ${win > 0 ? '✅ +' + win : '❌ проигрыш'}`, win > 0);
+    };
+
+    // 4. Орёл/Решка
+    window.play_coin = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const side = Math.random() < 0.5 ? 'Орёл' : 'Решка';
+        const win = (side === 'Орёл') ? bet * 1.8 : 0;
+        balance += win;
+        updateBalance();
+        showResult(`🪙 ${side} ${win > 0 ? '✅ +' + Math.round(win) : '❌ проигрыш'}`, win > 0);
+    };
+
+    // 5. Блэкджек (упрощённый)
+    window.play_blackjack = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const player = Math.floor(Math.random() * 10) + 12;
+        const dealer = Math.floor(Math.random() * 10) + 12;
+        let win = 0;
+        if (player > 21) win = 0;
+        else if (dealer > 21 || player > dealer) win = bet * 1.5;
+        balance += win;
+        updateBalance();
+        showResult(`🃏 Вы: ${player}, Дилер: ${dealer} ${win > 0 ? '✅ +' + win : '❌ проигрыш'}`, win > 0);
+    };
+
+    // 6. Кено
+    window.play_keno = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const picks = [Math.floor(Math.random()*80)+1, Math.floor(Math.random()*80)+1, Math.floor(Math.random()*80)+1];
+        const hits = Math.floor(Math.random() * 4);
+        const win = hits >= 2 ? bet * (hits * 2) : 0;
+        balance += win;
+        updateBalance();
+        showResult(`🎯 Попаданий: ${hits} ${win > 0 ? '✅ +' + win : '❌ проигрыш'}`, win > 0);
+    };
+
+    // 7. Покер (одна карта)
+    window.play_poker = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+        const suits = ['♠','♥','♦','♣'];
+        const card = ranks[Math.floor(Math.random()*13)] + suits[Math.floor(Math.random()*4)];
+        const win = (card.startsWith('A')) ? bet * 3 : (['K','Q','J'].includes(card[0]) ? bet * 1.5 : 0);
+        balance += win;
+        updateBalance();
+        showResult(`♠️ ${card} ${win > 0 ? '✅ +' + win : '❌ проигрыш'}`, win > 0);
+    };
+
+    // 8. Колесо фортуны
+    window.play_wheel = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const sectors = ['x1','x2','x3','x5','x10','x0'];
+        const result = sectors[Math.floor(Math.random()*6)];
+        const multiplier = parseInt(result.replace('x','')) || 0;
+        const win = bet * multiplier;
+        balance += win;
+        updateBalance();
+        showResult(`🎡 ${result} ${win > 0 ? '✅ +' + win : '❌ проигрыш'}`, win > 0);
+    };
+
+    // 9. Быки и коровы
+    window.play_bulls = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const secret = String(Math.floor(Math.random() * 9000) + 1000);
+        const guess = String(Math.floor(Math.random() * 9000) + 1000);
+        let bulls = 0, cows = 0;
+        for (let i = 0; i < 4; i++) {
+            if (secret[i] === guess[i]) bulls++;
+            else if (secret.includes(guess[i])) cows++;
+        }
+        const win = bulls === 4 ? bet * 5 : (bulls >= 2 ? bet * 1.5 : 0);
+        balance += win;
+        updateBalance();
+        showResult(`🐂 Быки: ${bulls}, Коровы: ${cows} ${win > 0 ? '✅ +' + win : '❌ проигрыш'}`, win > 0);
+    };
+
+    // 10. Крипто-ставка
+    window.play_crypto = function() {
+        const bet = placeBet(10);
+        if (!bet) return;
+        const change = (Math.random() * 10) - 5;
+        const win = change > 0 ? bet * (1 + change/10) : 0;
+        balance += win;
+        updateBalance();
+        showResult(`📈 ${change > 0 ? '📈 +' + change.toFixed(2) : '📉 ' + change.toFixed(2)}% ${win > 0 ? '✅ +' + Math.round(win) : '❌ проигрыш'}`, win > 0);
+    };
+
+    updateBalance();
+</script>
+</body>
+</html>
