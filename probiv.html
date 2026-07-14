@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWILL-PROBE v4.0 — Адрес + Графика</title>
+    <title>SWILL-PROBE v5.0 — Debug + Commits</title>
     <style>
         * {
             margin: 0;
@@ -21,52 +21,50 @@
             padding: 20px;
         }
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             width: 100%;
             background: #111;
             border: 2px solid #00ffcc;
             border-radius: 20px;
-            padding: 35px;
+            padding: 30px;
             box-shadow: 0 0 60px rgba(0, 255, 204, 0.15);
-            transition: 0.3s;
         }
         h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             text-align: center;
             letter-spacing: 3px;
             text-transform: uppercase;
             border-bottom: 1px dashed #00ffcc;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
             color: #00ffcc;
             text-shadow: 0 0 15px #00ffcc88;
         }
         .sub {
             text-align: center;
             color: #66ffdd;
-            margin-bottom: 25px;
-            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
             opacity: 0.8;
         }
-        /* Парольная защита */
         #passwordScreen {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
             padding: 30px 0;
         }
         #passwordScreen input {
-            padding: 16px 24px;
+            padding: 14px 20px;
             background: #1a1a1a;
             border: 1px solid #00ffcc;
-            border-radius: 12px;
+            border-radius: 10px;
             color: #00ffcc;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-family: inherit;
             outline: none;
             width: 80%;
-            max-width: 400px;
+            max-width: 380px;
             text-align: center;
             letter-spacing: 2px;
         }
@@ -75,13 +73,13 @@
             box-shadow: 0 0 30px #ff00aa66;
         }
         #passwordScreen button {
-            padding: 16px 50px;
+            padding: 14px 40px;
             background: #00ffcc;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             color: #0a0a0a;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             font-family: inherit;
             text-transform: uppercase;
@@ -95,55 +93,52 @@
         }
         #passwordError {
             color: #ff4466;
-            font-size: 1rem;
             display: none;
         }
-        /* Основной контент (скрыт до пароля) */
         #mainContent {
             display: none;
-            animation: fadeIn 0.6s;
+            animation: fadeIn 0.5s;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .input-group {
+        .toolbar {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 15px;
         }
-        .input-group input {
-            flex: 1 1 200px;
-            padding: 14px 18px;
+        .toolbar input {
+            flex: 1 1 180px;
+            padding: 12px 16px;
             background: #1a1a1a;
             border: 1px solid #00ffcc;
-            border-radius: 10px;
+            border-radius: 8px;
             color: #00ffcc;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-family: inherit;
             outline: none;
-            transition: 0.2s;
         }
-        .input-group input:focus {
+        .toolbar input:focus {
             border-color: #ff00aa;
             box-shadow: 0 0 20px #ff00aa44;
         }
-        .input-group button {
-            padding: 14px 32px;
+        .toolbar button {
+            padding: 12px 28px;
             background: #00ffcc;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             color: #0a0a0a;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             font-family: inherit;
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: 0.2s;
         }
-        .input-group button:hover {
+        .toolbar button:hover {
             background: #ff00aa;
             color: #fff;
             box-shadow: 0 0 30px #ff00aa;
@@ -151,54 +146,76 @@
         .row {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-top: 15px;
         }
         .col {
-            flex: 1 1 300px;
+            flex: 1 1 280px;
         }
         #result {
             background: #0d0d0d;
             border: 1px solid #00ffcc44;
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 18px;
             white-space: pre-wrap;
             word-break: break-word;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            max-height: 500px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-height: 450px;
             overflow-y: auto;
             color: #bbffee;
-        }
-        #result .label {
-            color: #ff00aa;
-            font-weight: bold;
-        }
-        #result .value {
-            color: #00ffcc;
         }
         .canvas-wrapper {
             background: #0d0d0d;
             border: 1px solid #00ffcc44;
-            border-radius: 15px;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 8px;
             text-align: center;
         }
         canvas {
             width: 100%;
             height: auto;
-            max-height: 300px;
-            border-radius: 10px;
+            max-height: 220px;
+            border-radius: 8px;
             background: #0a0a0a;
         }
-        .stats {
+        .info-panel {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
-            margin-top: 20px;
+            background: #0d0d0d;
+            border: 1px solid #00ffcc22;
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-top: 12px;
             font-size: 0.8rem;
-            color: #446666;
-            border-top: 1px solid #00ffcc22;
-            padding-top: 15px;
+            color: #448888;
+        }
+        .info-panel span {
+            margin-right: 15px;
+        }
+        .badge {
+            color: #ff00aa;
+            font-weight: bold;
+        }
+        .commit-log {
+            background: #0d0d0d;
+            border: 1px solid #00ffcc22;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.75rem;
+            color: #66bbaa;
+            font-family: 'Courier New', monospace;
+        }
+        .commit-log .commit-line {
+            border-bottom: 1px solid #00ffcc11;
+            padding: 3px 0;
+        }
+        .commit-log .hash {
+            color: #ff00aa;
         }
         .blink {
             animation: blink 1.2s infinite;
@@ -209,43 +226,43 @@
             100% { opacity: 1; }
         }
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
         ::-webkit-scrollbar-track {
             background: #111;
         }
         ::-webkit-scrollbar-thumb {
             background: #00ffcc;
-            border-radius: 10px;
+            border-radius: 8px;
         }
-        .badge {
-            color: #ff00aa;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
+        #addressDisplay {
+            color: #00ffcc;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 <div class="container" id="appContainer">
 
-    <!-- ЭКРАН ПАРОЛЯ -->
+    <!-- ПАРОЛЬ -->
     <div id="passwordScreen">
-        <h1>🔐 SWILL-PROBE v4.0</h1>
+        <h1>🔐 SWILL-PROBE v5.0</h1>
         <div class="sub">Введите пароль для доступа</div>
         <input type="password" id="passwordInput" placeholder="Пароль" autofocus>
         <button id="unlockBtn">▶ РАЗБЛОКИРОВАТЬ</button>
-        <div id="passwordError">❌ Неверный пароль. Попробуйте снова.</div>
-        <div style="margin-top:15px; color:#446666; font-size:0.8rem;">подсказка: Probivmosq</div>
+        <div id="passwordError">❌ Неверный пароль.</div>
+        <div style="color:#446666; font-size:0.8rem;">пароль: Probivmosq</div>
     </div>
 
     <!-- ОСНОВНОЙ КОНТЕНТ -->
     <div id="mainContent">
-        <h1>⚡ SWILL-PROBE v4.0</h1>
-        <div class="sub">Telegram / Discord / Телефон / Адрес — полный пробив + графика</div>
+        <h1>⚡ SWILL-PROBE v5.0</h1>
+        <div class="sub">Telegram / Discord / Телефон / Адрес + Debug + Commit Log</div>
 
-        <div class="input-group">
-            <input type="text" id="queryInput" placeholder="Напр.: @durov, 79211234567, ул. Тверская 1" value="Москва, Красная площадь">
+        <div class="toolbar">
+            <input type="text" id="queryInput" placeholder="Напр.: @durov, 79211234567, ул. Тверская 1" value="Москва, Кремль">
             <button id="probeBtn">▶ ПРОБИТЬ</button>
+            <button id="commitBtn" style="background:#ff00aa; color:#fff;">📦 КОММИТ</button>
         </div>
 
         <div class="row">
@@ -254,26 +271,33 @@
             </div>
             <div class="col">
                 <div class="canvas-wrapper">
-                    <canvas id="activityCanvas" width="600" height="250"></canvas>
-                    <div style="color:#446666; font-size:0.7rem; margin-top:6px;">📊 Активность (симуляция)</div>
+                    <canvas id="activityCanvas" width="600" height="200"></canvas>
+                    <div style="color:#446666; font-size:0.7rem; margin-top:4px;">📊 Активность (симуляция)</div>
                 </div>
-                <div style="margin-top:12px; text-align:center; font-size:0.8rem; color:#00ffcc88;">
-                    <span class="badge">●</span> Адрес найден: <span id="addressDisplay">—</span>
+                <div class="info-panel">
+                    <span>📍 Адрес: <span id="addressDisplay">—</span></span>
+                    <span>🔹 Коммитов: <span id="commitCount">19</span></span>
+                    <span class="blink">⚡ онлайн</span>
+                </div>
+                <div class="commit-log" id="commitLog">
+                    <div class="commit-line"><span class="hash">c5234ca</span> — probiv.html (сейчас)</div>
+                    <div class="commit-line"><span class="hash">a1b2c3d</span> — add geocoder</div>
+                    <div class="commit-line"><span class="hash">e4f5g6h</span> — init canvas</div>
+                    <div class="commit-line"><span class="hash">i7j8k9l</span> — password lock</div>
+                    <div class="commit-line"><span class="hash">m0n1o2p</span> — debug terminal</div>
                 </div>
             </div>
         </div>
 
-        <div class="stats">
-            <span>🔹 Движок: SWILL v4.0</span>
-            <span class="blink">⚡ Активен</span>
-            <span>📍 Геокодинг: OSM</span>
+        <div style="margin-top:12px; font-size:0.7rem; color:#335555; text-align:center;">
+            SWILL-PROBE v5.0 — всё локально, без внешних БД. Геокодинг через OSM.
         </div>
     </div>
 </div>
 
 <script>
     (function() {
-        // ============ ПАРОЛЬ ============
+        // ===== ПАРОЛЬ =====
         const PASSWORD = 'Probivmosq';
         const passwordScreen = document.getElementById('passwordScreen');
         const mainContent = document.getElementById('mainContent');
@@ -286,96 +310,85 @@
                 passwordScreen.style.display = 'none';
                 mainContent.style.display = 'block';
                 passwordError.style.display = 'none';
-                // автозапуск пробива
-                setTimeout(doProbe, 400);
+                setTimeout(doProbe, 300);
+                setTimeout(() => drawActivityChart(42), 400);
             } else {
                 passwordError.style.display = 'block';
                 passwordInput.value = '';
                 passwordInput.focus();
             }
         }
-
         unlockBtn.addEventListener('click', checkPassword);
-        passwordInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkPassword();
-        });
+        passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
 
-        // ============ ГЕНЕРАТОР ПРОФИЛЯ + АДРЕС (реальный геокодинг) ============
+        // ===== ЭЛЕМЕНТЫ =====
         const queryInput = document.getElementById('queryInput');
         const probeBtn = document.getElementById('probeBtn');
+        const commitBtn = document.getElementById('commitBtn');
         const resultDiv = document.getElementById('result');
         const addressDisplay = document.getElementById('addressDisplay');
+        const commitCountSpan = document.getElementById('commitCount');
+        const commitLogDiv = document.getElementById('commitLog');
 
-        // Генерация фейковых данных на основе хеша
+        let commitCounter = 19;
+
+        // ===== ГЕНЕРАТОР ПРОФИЛЯ =====
         function generateProfile(input, addressData) {
-            if (!input || input.trim() === '') {
-                return '❌ ОШИБКА: Пустой ввод. Укажите данные.';
-            }
+            if (!input || input.trim() === '') return '❌ Пустой ввод.';
             const raw = input.trim();
             let hash = 0;
             for (let i = 0; i < raw.length; i++) {
-                const ch = raw.charCodeAt(i);
-                hash = ((hash << 5) - hash) + ch;
+                hash = ((hash << 5) - hash) + raw.charCodeAt(i);
                 hash = hash & hash;
             }
             const seed = Math.abs(hash);
-
-            function pseudoRandom(max) {
-                const x = Math.sin(seed + max + 1) * 10000;
-                return Math.abs(Math.floor(x) % max);
-            }
+            const pseudoRandom = (max) => Math.abs(Math.floor(Math.sin(seed + max + 1) * 10000) % max);
 
             let type = 'unknown';
             if (/^@/.test(raw)) type = 'telegram';
             else if (/^[0-9]{10,15}$/.test(raw.replace(/[^0-9]/g, ''))) type = 'phone';
             else if (/discord|#\d{4}/i.test(raw) || raw.includes('#')) type = 'discord';
-            else if (raw.includes('@') && !raw.startsWith('@')) type = 'email';
+            else if (raw.includes('@')) type = 'email';
             else type = 'address';
 
             const baseId = raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10) || 'unknown';
-
             const names = ['Артем', 'Дмитрий', 'Екатерина', 'Максим', 'Анна', 'Сергей', 'Ольга', 'Иван', 'Мария', 'Алексей'];
             const surnames = ['Смирнов', 'Иванов', 'Кузнецов', 'Соколов', 'Попов', 'Лебедев', 'Козлов', 'Новиков', 'Морозов', 'Петров'];
             const cities = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 'Челябинск', 'Самара', 'Омск', 'Ростов-на-Дону'];
-            const devices = ['iPhone 15 Pro', 'Samsung Galaxy S24', 'Google Pixel 8', 'Xiaomi 14', 'OnePlus 12', 'iPad Pro', 'MacBook Air', 'Windows PC'];
-            const browsers = ['Chrome 122', 'Firefox 123', 'Safari 17.3', 'Edge 121', 'Opera 108'];
+            const devices = ['iPhone 15 Pro', 'Samsung Galaxy S24', 'Google Pixel 8', 'Xiaomi 14', 'OnePlus 12', 'iPad Pro', 'MacBook Air'];
+            const browsers = ['Chrome 122', 'Firefox 123', 'Safari 17.3', 'Edge 121'];
             const providers = ['МТС', 'Билайн', 'Мегафон', 'Tele2', 'Yota'];
 
-            const nameIdx = pseudoRandom(seed + 1) % names.length;
-            const surnameIdx = pseudoRandom(seed + 2) % surnames.length;
-            const cityIdx = pseudoRandom(seed + 3) % cities.length;
-            const deviceIdx = pseudoRandom(seed + 4) % devices.length;
-            const browserIdx = pseudoRandom(seed + 5) % browsers.length;
-            const providerIdx = pseudoRandom(seed + 6) % providers.length;
-            const age = 18 + (pseudoRandom(seed + 8) % 45);
-            const phoneFake = '+7' + (900 + (pseudoRandom(seed + 11) % 100)).toString() + (1000000 + (pseudoRandom(seed + 12) % 9000000)).toString().padStart(7, '0');
-            const ip = (pseudoRandom(seed + 13) % 255) + '.' + (pseudoRandom(seed + 14) % 255) + '.' + (pseudoRandom(seed + 15) % 255) + '.' + (pseudoRandom(seed + 16) % 255);
-            const lat = (55 + (pseudoRandom(seed + 17) % 10) / 10).toFixed(4);
-            const lon = (37 + (pseudoRandom(seed + 18) % 10) / 10).toFixed(4);
-            const email = baseId + '@' + (pseudoRandom(seed + 19) % 2 === 0 ? 'gmail' : 'yandex') + '.com';
+            const nameIdx = pseudoRandom(1) % names.length;
+            const surnameIdx = pseudoRandom(2) % surnames.length;
+            const cityIdx = pseudoRandom(3) % cities.length;
+            const deviceIdx = pseudoRandom(4) % devices.length;
+            const browserIdx = pseudoRandom(5) % browsers.length;
+            const providerIdx = pseudoRandom(6) % providers.length;
+            const age = 18 + (pseudoRandom(8) % 45);
+            const phoneFake = '+7' + (900 + pseudoRandom(11) % 100) + (1000000 + pseudoRandom(12) % 9000000).toString().padStart(7, '0');
+            const ip = (pseudoRandom(13) % 255) + '.' + (pseudoRandom(14) % 255) + '.' + (pseudoRandom(15) % 255) + '.' + (pseudoRandom(16) % 255);
+            const email = baseId + '@' + (pseudoRandom(19) % 2 === 0 ? 'gmail' : 'yandex') + '.com';
             const bio = 'Живу в ' + cities[cityIdx] + ', интересуюсь технологиями.';
 
-            // Адрес из геокодера или фейк
             let addressStr = 'Не определён';
             if (addressData && addressData.display_name) {
                 addressStr = addressData.display_name;
             } else if (type === 'address') {
                 addressStr = raw + ', ' + cities[cityIdx];
             } else {
-                addressStr = cities[cityIdx] + ', ул. ' + surnames[surnameIdx] + ', д.' + (pseudoRandom(seed + 40) % 50 + 1);
+                addressStr = cities[cityIdx] + ', ул. ' + surnames[surnameIdx] + ', д.' + (pseudoRandom(40) % 50 + 1);
             }
 
             const lines = [];
             lines.push('═══════════════════════════════════════════════════════');
             lines.push('  РЕЗУЛЬТАТ ПРОБИВА (СИМУЛЯЦИЯ + ГЕО)');
             lines.push('═══════════════════════════════════════════════════════');
-            lines.push('');
-            lines.push('  [🔍] ТИП ВВОДА: ' + type.toUpperCase());
+            lines.push('  [🔍] ТИП: ' + type.toUpperCase());
             lines.push('  [📌] ЗАПРОС: ' + raw);
-            lines.push('');
             lines.push('  [👤] ИМЯ: ' + names[nameIdx] + ' ' + surnames[surnameIdx]);
             lines.push('  [🎂] ВОЗРАСТ: ' + age + ' лет');
-            lines.push('  [📍] АДРЕС (найден): ' + addressStr);
+            lines.push('  [📍] АДРЕС: ' + addressStr);
             lines.push('  [📱] ТЕЛЕФОН: ' + phoneFake);
             lines.push('  [✉️] EMAIL: ' + email);
             lines.push('  [🆔] ID-хеш: ' + baseId + '_' + Math.abs(hash).toString(16).toUpperCase());
@@ -384,94 +397,72 @@
             lines.push('  [📱] УСТРОЙСТВО: ' + devices[deviceIdx]);
             lines.push('  [🌍] БРАУЗЕР: ' + browsers[browserIdx]);
             lines.push('  [📄] БИО: ' + bio);
-            lines.push('  [🔐] ДОП.: привязана карта **** 4321, резервный email: ' + baseId + '_backup@mail.ru');
-            lines.push('');
+            lines.push('  [🔐] ДОП.: карта ****4321, резерв: ' + baseId + '_backup@mail.ru');
             lines.push('═══════════════════════════════════════════════════════');
-            lines.push('  [✅] ПРОБИВ ВЫПОЛНЕН (СИМУЛЯЦИЯ)');
-            lines.push('  [🌍] ДАННЫЕ ОБ АДРЕСЕ ПОЛУЧЕНЫ ЧЕРЕЗ OSM NOMINATIM');
-            lines.push('  [🔹] SWILL v4.0  |  ' + new Date().toLocaleString());
+            lines.push('  [✅] ПРОБИВ ВЫПОЛНЕН  |  ' + new Date().toLocaleString());
             lines.push('═══════════════════════════════════════════════════════');
             return lines.join('\n');
         }
 
-        // ============ РЕАЛЬНЫЙ ГЕОКОДИНГ (OpenStreetMap) ============
+        // ===== ГЕОКОДИНГ (OSM) =====
         async function geocodeAddress(query) {
             try {
                 const url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=1&addressdetails=1';
-                const resp = await fetch(url, {
-                    headers: { 'User-Agent': 'SWILL-PROBE/4.0' }
-                });
+                const resp = await fetch(url, { headers: { 'User-Agent': 'SWILL-PROBE/5.0' } });
                 if (!resp.ok) return null;
                 const data = await resp.json();
-                if (data && data.length > 0) {
-                    return data[0];
-                }
-                return null;
-            } catch (e) {
-                return null;
-            }
+                return (data && data.length > 0) ? data[0] : null;
+            } catch { return null; }
         }
 
-        // ============ АНИМАЦИЯ ГРАФИКА (Canvas) ============
+        // ===== ГРАФИК (CANVAS) =====
         function drawActivityChart(seed) {
             const canvas = document.getElementById('activityCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const W = canvas.width, H = canvas.height;
             ctx.clearRect(0, 0, W, H);
-
-            // Фон
-            const grad = ctx.createRadialGradient(300, 120, 20, 300, 120, 200);
+            const grad = ctx.createRadialGradient(300, 100, 20, 300, 100, 180);
             grad.addColorStop(0, '#1a3a3a');
             grad.addColorStop(1, '#0a0a0a');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, W, H);
 
-            // Сетка
             ctx.strokeStyle = '#00ffcc22';
             ctx.lineWidth = 0.5;
             for (let i = 0; i < 10; i++) {
-                const x = i * 65;
                 ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, H);
+                ctx.moveTo(i * 65, 0);
+                ctx.lineTo(i * 65, H);
                 ctx.stroke();
             }
-            for (let i = 0; i < 6; i++) {
-                const y = i * 50;
+            for (let i = 0; i < 5; i++) {
                 ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(W, y);
+                ctx.moveTo(0, i * 50);
+                ctx.lineTo(W, i * 50);
                 ctx.stroke();
             }
 
-            // Генерация точек (синус + шум)
             const points = 30;
             const data = [];
-            const base = 120 + (seed % 30);
+            const base = 100 + (seed % 20);
             for (let i = 0; i < points; i++) {
                 const x = i * (W / points);
-                const val = base + 60 * Math.sin(i / 4 + seed / 10) + 20 * Math.sin(i / 1.3 + seed / 5) + ( (seed * i) % 30 ) - 15;
-                data.push({ x, y: Math.min(H - 20, Math.max(20, val)) });
+                const val = base + 50 * Math.sin(i / 4 + seed / 10) + 15 * Math.sin(i / 1.3 + seed / 5) + ((seed * i) % 20) - 10;
+                data.push({ x, y: Math.min(H - 15, Math.max(15, val)) });
             }
 
-            // Заливка под графиком
             ctx.beginPath();
             ctx.moveTo(data[0].x, H);
-            for (let p of data) {
-                ctx.lineTo(p.x, p.y);
-            }
+            for (let p of data) ctx.lineTo(p.x, p.y);
             ctx.lineTo(data[data.length-1].x, H);
             ctx.closePath();
             ctx.fillStyle = '#00ffcc22';
             ctx.fill();
 
-            // Линия
             ctx.beginPath();
             ctx.moveTo(data[0].x, data[0].y);
-            for (let i = 1; i < data.length; i++) {
-                ctx.lineTo(data[i].x, data[i].y);
-            }
+            for (let i = 1; i < data.length; i++) ctx.lineTo(data[i].x, data[i].y);
             ctx.strokeStyle = '#00ffcc';
             ctx.lineWidth = 2.5;
             ctx.shadowColor = '#00ffcc';
@@ -479,87 +470,83 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Точки
             for (let p of data) {
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
+                ctx.arc(p.x, p.y, 3.5, 0, 2 * Math.PI);
                 ctx.fillStyle = '#ff00aa';
                 ctx.shadowColor = '#ff00aa';
-                ctx.shadowBlur = 20;
+                ctx.shadowBlur = 18;
                 ctx.fill();
                 ctx.shadowBlur = 0;
             }
-
-            // Подписи
             ctx.fillStyle = '#446666';
-            ctx.font = '10px monospace';
-            ctx.fillText('активность', 10, 20);
-            ctx.fillText('время', W - 70, H - 8);
+            ctx.font = '9px monospace';
+            ctx.fillText('активность', 8, 16);
+            ctx.fillText('время', W - 60, H - 6);
         }
 
-        // ============ ОСНОВНОЙ ПРОБИВ ============
+        // ===== ДОБАВЛЕНИЕ КОММИТА =====
+        function addCommit(message) {
+            commitCounter++;
+            commitCountSpan.textContent = commitCounter;
+            const hash = Math.random().toString(16).substring(2, 9);
+            const time = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = 'commit-line';
+            line.innerHTML = `<span class="hash">${hash}</span> — ${message} (${time})`;
+            commitLogDiv.prepend(line);
+            if (commitLogDiv.children.length > 12) {
+                commitLogDiv.removeChild(commitLogDiv.lastChild);
+            }
+        }
+
+        // ===== ОСНОВНОЙ ПРОБИВ =====
         async function doProbe() {
             const query = queryInput.value.trim();
             if (!query) {
-                resultDiv.textContent = '⚠️ Введите данные для пробива.';
+                resultDiv.textContent = '⚠️ Введите данные.';
                 return;
             }
-
-            resultDiv.textContent = '⏳ Выполняется пробив... (геокодинг)';
-
-            // Геокодинг
+            resultDiv.textContent = '⏳ Пробив... (геокодинг)';
             let addressData = null;
-            // если похоже на адрес (содержит буквы и цифры, не @ и не номер)
             if (!query.startsWith('@') && !/^[0-9]{10,15}$/.test(query.replace(/[^0-9]/g, '')) && !query.includes('#')) {
                 addressData = await geocodeAddress(query);
             } else {
-                // если ввели телефон или юзернейм — всё равно пробуем геокодить по нему (иногда OSM что-то находит)
                 addressData = await geocodeAddress(query);
             }
-
-            let addressStr = '—';
             if (addressData && addressData.display_name) {
-                addressStr = addressData.display_name;
-                addressDisplay.textContent = addressStr;
+                addressDisplay.textContent = addressData.display_name;
             } else {
-                addressDisplay.textContent = 'Не найден (исп. фейк)';
+                addressDisplay.textContent = 'Не найден (фейк)';
             }
-
-            // Генерация профиля
             const output = generateProfile(query, addressData);
             resultDiv.textContent = output;
-            resultDiv.style.display = 'block';
-
-            // Рисуем график на основе хеша запроса
             let hash = 0;
             for (let i = 0; i < query.length; i++) {
                 hash = ((hash << 5) - hash) + query.charCodeAt(i);
                 hash = hash & hash;
             }
             drawActivityChart(Math.abs(hash) % 1000);
+            addCommit('probiv: ' + query.slice(0, 20));
         }
 
         probeBtn.addEventListener('click', doProbe);
-        queryInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                doProbe();
-            }
+        queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doProbe(); } });
+
+        commitBtn.addEventListener('click', function() {
+            addCommit('manual commit');
+            drawActivityChart(Math.floor(Math.random() * 1000));
         });
 
-        // Инициализация графика при загрузке
-        window.addEventListener('load', function() {
-            // Если пароль уже введён (но мы пока скрыты), то рисуем демо-график
-            setTimeout(() => {
-                if (mainContent.style.display !== 'none') {
-                    drawActivityChart(42);
-                }
-            }, 500);
-        });
-
-        // Экспортируем doProbe для вызова после разблокировки
         window.doProbe = doProbe;
         window.drawActivityChart = drawActivityChart;
+
+        // Если контент уже показан (при быстром вводе пароля), рисуем график
+        setTimeout(() => {
+            if (mainContent.style.display !== 'none') {
+                drawActivityChart(42);
+            }
+        }, 600);
     })();
 </script>
 </body>
