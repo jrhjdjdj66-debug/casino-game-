@@ -18,7 +18,6 @@
             background-image: radial-gradient(circle at 20% 50%, #1a0a2e 0%, #0a0a1a 70%);
         }
         
-        /* ГЛАВНЫЙ ХЕДЕР */
         .header {
             text-align: center;
             padding: 30px 0;
@@ -57,7 +56,6 @@
             font-weight: 900;
         }
         
-        /* СЕТКА ИГР */
         .game-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -135,7 +133,6 @@
             opacity: 1;
         }
         
-        /* ИГРОВАЯ ОБЛАСТЬ */
         #gameArea {
             background: rgba(255,255,255,0.03);
             backdrop-filter: blur(10px);
@@ -214,22 +211,108 @@
             100% { transform: scale(1); opacity: 1; }
         }
         
-        /* КАНВАС ДЛЯ РУЛЕТКИ */
-        canvas {
-            display: block;
-            margin: 20px auto;
-            border-radius: 20px;
-            box-shadow: 0 0 60px rgba(241,196,15,0.1);
-            background: #0a0a1a;
-            max-width: 100%;
-            animation: pulseGlow 2s ease-in-out infinite;
-        }
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 40px rgba(241,196,15,0.05); }
-            50% { box-shadow: 0 0 80px rgba(241,196,15,0.15); }
+        .game-display {
+            padding: 20px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
-        /* АДАПТИВ */
+        .card {
+            display: inline-block;
+            background: white;
+            color: #1a1a2e;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 32px;
+            font-weight: 900;
+            margin: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            min-width: 60px;
+            text-align: center;
+            animation: cardDeal 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes cardDeal {
+            0% { transform: translateY(-100px) rotate(20deg); opacity: 0; }
+            100% { transform: translateY(0) rotate(0); opacity: 1; }
+        }
+        
+        .card.red { color: #e74c3c; }
+        .card.black { color: #1a1a2e; }
+        
+        .slot-reel {
+            display: inline-block;
+            font-size: 60px;
+            margin: 0 10px;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            animation: slotSpin 0.1s linear infinite;
+        }
+        @keyframes slotSpin {
+            0% { transform: translateY(-10px); }
+            50% { transform: translateY(10px); }
+            100% { transform: translateY(-10px); }
+        }
+        
+        .dice {
+            display: inline-block;
+            font-size: 80px;
+            margin: 0 15px;
+            animation: diceRoll 0.2s ease-in-out infinite;
+        }
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(1); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .wheel-segment {
+            font-size: 60px;
+            animation: wheelSpin 0.1s linear infinite;
+        }
+        @keyframes wheelSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .coin-flip {
+            font-size: 80px;
+            animation: coinFlip 0.5s ease-in-out;
+        }
+        @keyframes coinFlip {
+            0% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.3); }
+            100% { transform: rotateY(360deg) scale(1); }
+        }
+        
+        .crypto-chart {
+            width: 100%;
+            height: 100px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .crypto-bar {
+            position: absolute;
+            bottom: 0;
+            width: 30px;
+            margin: 0 5px;
+            background: linear-gradient(to top, #4caf50, #8bc34a);
+            border-radius: 4px 4px 0 0;
+            animation: barGrow 0.5s ease-out;
+        }
+        @keyframes barGrow {
+            0% { height: 0; }
+            100% { height: var(--h); }
+        }
+        
         @media (max-width: 480px) {
             .header h1 { font-size: 28px; }
             .balance { font-size: 16px; padding: 12px 20px; }
@@ -314,7 +397,6 @@
 
     function updateBalance() {
         document.getElementById('balanceVal').textContent = balance;
-        // Отправляем данные в бота
         tg.sendData(JSON.stringify({ balance }));
     }
 
@@ -350,34 +432,27 @@
                 <button onclick="play_${game}()">▶ ИГРАТЬ</button>
             </div>
             <div id="gameResult" class="result" style="color:#aaa;">⬇️ СДЕЛАЙ СТАВКУ ⬇️</div>
-            <div id="gameCanvas"></div>
+            <div id="gameDisplay" class="game-display"></div>
         `;
-        if (game === 'roulette') setTimeout(drawRoulette, 100);
-        if (game === 'slots') setTimeout(drawSlots, 100);
-        if (game === 'dice') setTimeout(drawDice, 100);
-        if (game === 'wheel') setTimeout(drawWheel, 100);
     }
 
-    // ========== РУЛЕТКА С АНИМАЦИЕЙ ==========
+    // ========== РУЛЕТКА ==========
     let rouletteAngle = 0, spinning = false;
 
     function drawRoulette(angle = 0) {
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-        container.innerHTML = '';
-        const canvas = document.createElement('canvas');
-        canvas.width = 320;
-        canvas.height = 320;
-        container.appendChild(canvas);
+        const display = document.getElementById('gameDisplay');
+        if (!display) return;
+        display.innerHTML = `
+            <canvas id="rouletteCanvas" width="320" height="320"></canvas>
+        `;
+        const canvas = document.getElementById('rouletteCanvas');
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const cx = 160, cy = 160, radius = 140;
-
         const numbers = Array.from({length: 37}, (_, i) => i);
         const colors = numbers.map(n => n === 0 ? '#2ecc71' : (n % 2 === 0 ? '#1a1a3e' : '#e74c3c'));
         const segAngle = (Math.PI * 2) / 37;
-
         ctx.clearRect(0, 0, 320, 320);
-        
         for (let i = 0; i < 37; i++) {
             const start = angle + i * segAngle;
             const end = start + segAngle;
@@ -387,12 +462,9 @@
             ctx.closePath();
             ctx.fillStyle = colors[i];
             ctx.fill();
-            ctx.shadowColor = 'rgba(241,196,15,0.1)';
-            ctx.shadowBlur = 10;
             ctx.strokeStyle = 'rgba(255,255,255,0.2)';
             ctx.lineWidth = 1;
             ctx.stroke();
-
             ctx.save();
             ctx.translate(cx, cy);
             ctx.rotate(start + segAngle/2);
@@ -400,30 +472,19 @@
             ctx.textBaseline = 'middle';
             ctx.fillStyle = '#fff';
             ctx.font = '11px Orbitron, sans-serif';
-            ctx.shadowBlur = 0;
             ctx.fillText(numbers[i], radius * 0.72, 0);
             ctx.restore();
         }
-
-        // Центр с анимацией
-        const glow = Date.now() / 1000;
-        const pulse = 1 + Math.sin(glow * 2) * 0.05;
-        ctx.shadowBlur = 0;
         ctx.beginPath();
-        ctx.arc(cx, cy, 22 * pulse, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 22, 0, Math.PI * 2);
         const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 22);
         grad.addColorStop(0, '#f1c40f');
         grad.addColorStop(1, '#e67e22');
         ctx.fillStyle = grad;
         ctx.fill();
-        ctx.shadowColor = 'rgba(241,196,15,0.5)';
-        ctx.shadowBlur = 30;
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.stroke();
-
-        // Стрелка
-        ctx.shadowBlur = 0;
         ctx.beginPath();
         ctx.moveTo(cx - 14, 8);
         ctx.lineTo(cx + 14, 8);
@@ -431,8 +492,6 @@
         ctx.closePath();
         ctx.fillStyle = '#ff6b6b';
         ctx.fill();
-        ctx.shadowColor = 'rgba(255,107,107,0.5)';
-        ctx.shadowBlur = 20;
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -443,7 +502,6 @@
         spinning = true;
         const bet = placeBet(10);
         if (!bet) { spinning = false; return; }
-
         const target = Math.floor(Math.random() * 37);
         const targetAngle = (target / 37) * Math.PI * 2;
         const spins = 5 + Math.random() * 3;
@@ -451,7 +509,7 @@
         const startAngle = rouletteAngle;
         const duration = 3000 + Math.random() * 1000;
         const startTime = Date.now();
-
+        drawRoulette(startAngle);
         function animate() {
             const elapsed = Date.now() - startTime;
             const progress = Math.min(elapsed / duration, 1);
@@ -459,7 +517,6 @@
             const currentAngle = startAngle + totalRotation * eased;
             rouletteAngle = currentAngle;
             drawRoulette(currentAngle);
-
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
@@ -474,29 +531,16 @@
         animate();
     };
 
-    // ========== СЛОТЫ С АНИМАЦИЕЙ ==========
+    // ========== СЛОТЫ ==========
     let slotInterval = null;
-
-    function drawSlots(reels = ['🍒','🍒','🍒']) {
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-        container.innerHTML = `
-            <div style="display:flex;justify-content:center;gap:20px;font-size:60px;padding:30px;background:rgba(0,0,0,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);">
-                <span style="animation:float 1.5s ease-in-out infinite;">${reels[0]}</span>
-                <span style="animation:float 1.5s ease-in-out infinite 0.3s;">${reels[1]}</span>
-                <span style="animation:float 1.5s ease-in-out infinite 0.6s;">${reels[2]}</span>
-            </div>
-        `;
-    }
 
     window.play_slots = function() {
         const bet = placeBet(10);
         if (!bet) return;
-
+        const display = document.getElementById('gameDisplay');
         const emojis = ['🍒','🍋','🍊','🍇','🔔','💎'];
         let count = 0;
         const maxCount = 15 + Math.floor(Math.random() * 10);
-
         if (slotInterval) clearInterval(slotInterval);
         slotInterval = setInterval(() => {
             const r = [
@@ -504,7 +548,13 @@
                 emojis[Math.floor(Math.random() * 6)],
                 emojis[Math.floor(Math.random() * 6)]
             ];
-            drawSlots(r);
+            display.innerHTML = `
+                <div style="display:flex;justify-content:center;gap:20px;padding:30px;">
+                    <span class="slot-reel">${r[0]}</span>
+                    <span class="slot-reel" style="animation-delay:0.1s;">${r[1]}</span>
+                    <span class="slot-reel" style="animation-delay:0.2s;">${r[2]}</span>
+                </div>
+            `;
             count++;
             if (count >= maxCount) {
                 clearInterval(slotInterval);
@@ -514,7 +564,13 @@
                     emojis[Math.floor(Math.random() * 6)],
                     emojis[Math.floor(Math.random() * 6)]
                 ];
-                drawSlots(final);
+                display.innerHTML = `
+                    <div style="display:flex;justify-content:center;gap:20px;padding:30px;">
+                        <span style="font-size:60px;animation:float 2s ease-in-out infinite;">${final[0]}</span>
+                        <span style="font-size:60px;animation:float 2s ease-in-out infinite 0.3s;">${final[1]}</span>
+                        <span style="font-size:60px;animation:float 2s ease-in-out infinite 0.6s;">${final[2]}</span>
+                    </div>
+                `;
                 const win = (final[0] === final[1] && final[1] === final[2]) ? bet * 5 : 
                            (final[0] === final[1] || final[1] === final[2] || final[0] === final[2]) ? bet * 1.5 : 0;
                 balance += win;
@@ -524,31 +580,17 @@
         }, 100);
     };
 
-    // ========== КОСТИ С АНИМАЦИЕЙ ==========
-    function drawDice(d1 = 1, d2 = 1, rolling = false) {
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-        container.innerHTML = `
-            <div style="display:flex;justify-content:center;gap:30px;padding:30px;">
-                <div style="font-size:80px;animation:${rolling ? 'roll 0.15s infinite' : 'float 2s ease-in-out infinite'};">🎲</div>
-                <div style="font-size:80px;animation:${rolling ? 'roll 0.15s infinite 0.07s' : 'float 2s ease-in-out infinite 0.3s'};">🎲</div>
-            </div>
-            <div style="text-align:center;font-size:32px;font-weight:900;color:#f1c40f;">
-                ${d1} + ${d2} = ${d1 + d2}
-            </div>
-        `;
-    }
-    @keyframes roll {
-        0% { transform: rotate(0deg) scale(1); }
-        50% { transform: rotate(180deg) scale(1.2); }
-        100% { transform: rotate(360deg) scale(1); }
-    }
-
+    // ========== КОСТИ ==========
     window.play_dice = function() {
         const bet = placeBet(10);
         if (!bet) return;
-
-        drawDice(1, 1, true);
+        const display = document.getElementById('gameDisplay');
+        display.innerHTML = `
+            <div style="display:flex;justify-content:center;padding:30px;">
+                <span class="dice">🎲</span>
+                <span class="dice" style="animation-delay:0.1s;">🎲</span>
+            </div>
+        `;
         setTimeout(() => {
             const d1 = Math.floor(Math.random() * 6) + 1;
             const d2 = Math.floor(Math.random() * 6) + 1;
@@ -556,7 +598,20 @@
             const win = (sum >= 8) ? bet * 2 : 0;
             balance += win;
             updateBalance();
-            drawDice(d1, d2, false);
+            display.innerHTML = `
+                <div style="display:flex;justify-content:center;align-items:center;gap:30px;padding:20px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:60px;">🎲</div>
+                        <div style="font-size:36px;font-weight:900;color:#f1c40f;">${d1}</div>
+                    </div>
+                    <div style="font-size:40px;font-weight:900;color:#fff;">+</div>
+                    <div style="text-align:center;">
+                        <div style="font-size:60px;">🎲</div>
+                        <div style="font-size:36px;font-weight:900;color:#f1c40f;">${d2}</div>
+                    </div>
+                    <div style="font-size:40px;font-weight:900;color:#f1c40f;">= ${sum}</div>
+                </div>
+            `;
             showResult(`🎲 ${d1}+${d2}=${sum}  ${win > 0 ? '✅ +' + win : '❌ ПРОИГРЫШ'}`, win > 0);
         }, 1500);
     };
@@ -565,11 +620,11 @@
     window.play_coin = function() {
         const bet = placeBet(10);
         if (!bet) return;
-
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-        container.innerHTML = `
-            <div style="text-align:center;font-size:100px;animation:spin 1s ease-in-out;padding:30px;">🪙</div>
+        const display = document.getElementById('gameDisplay');
+        display.innerHTML = `
+            <div style="text-align:center;padding:30px;">
+                <div class="coin-flip">🪙</div>
+            </div>
         `;
         setTimeout(() => {
             const side = Math.random() < 0.5 ? 'ОРЁЛ' : 'РЕШКА';
@@ -577,181 +632,137 @@
             const win = (side === 'ОРЁЛ') ? bet * 1.8 : 0;
             balance += win;
             updateBalance();
-            container.innerHTML = `
-                <div style="text-align:center;font-size:60px;padding:20px;">${emoji}</div>
-                <div style="text-align:center;font-size:28px;font-weight:900;color:#f1c40f;">${side}</div>
+            display.innerHTML = `
+                <div style="text-align:center;padding:20px;">
+                    <div style="font-size:80px;animation:float 2s ease-in-out infinite;">${emoji}</div>
+                    <div style="font-size:32px;font-weight:900;color:#f1c40f;margin-top:10px;">${side}</div>
+                </div>
             `;
             showResult(`🪙 ${side}  ${win > 0 ? '✅ +' + Math.round(win) : '❌ ПРОИГРЫШ'}`, win > 0);
         }, 1000);
     };
-    @keyframes spin {
-        0% { transform: rotateY(0deg) scale(1); }
-        50% { transform: rotateY(720deg) scale(1.3); }
-        100% { transform: rotateY(1440deg) scale(1); }
-    }
 
     // ========== БЛЭКДЖЕК ==========
     window.play_blackjack = function() {
         const bet = placeBet(10);
         if (!bet) return;
-
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-        
-        const player = Math.floor(Math.random() * 10) + 12;
-        const dealer = Math.floor(Math.random() * 10) + 12;
-        
-        let win = 0;
-        let msg = '';
-        if (player > 21) {
-            msg = '❌ ПЕРЕБОР';
-        } else if (dealer > 21 || player > dealer) {
-            win = bet * 1.5;
-            msg = '✅ ПОБЕДА!';
-        } else if (player === dealer) {
-            win = bet;
-            msg = '🤝 НИЧЬЯ';
-        } else {
-            msg = '❌ ПРОИГРЫШ';
+        const display = document.getElementById('gameDisplay');
+        const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+        const suits = ['♠','♥','♦','♣'];
+        let playerCards = [];
+        let dealerCards = [];
+        let playerSum = 0;
+        let dealerSum = 0;
+        let cardIndex = 0;
+        const maxCards = 5;
+        function getCard() {
+            const rank = ranks[Math.floor(Math.random() * 13)];
+            const suit = suits[Math.floor(Math.random() * 4)];
+            const value = rank === 'A' ? 11 : (['K','Q','J'].includes(rank) ? 10 : parseInt(rank));
+            return { rank, suit, value, display: rank + suit };
         }
-        balance += win;
-        updateBalance();
-
-        container.innerHTML = `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:20px;">
-                <div style="text-align:center;background:rgba(0,0,0,0.3);padding:15px;border-radius:12px;">
-                    <div style="font-size:14px;opacity:0.6;">ДИЛЕР</div>
-                    <div style="font-size:40px;">🃏</div>
-                    <div style="font-size:24px;font-weight:900;">${dealer}</div>
+        function renderCards() {
+            display.innerHTML = `
+                <div style="width:100%;">
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:14px;opacity:0.6;text-align:center;">ДИЛЕР (${dealerSum})</div>
+                        <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:10px;">
+                            ${dealerCards.map(c => `<span class="card ${['♥','♦'].includes(c.suit) ? 'red' : 'black'}">${c.display}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:14px;opacity:0.6;text-align:center;">ВЫ (${playerSum})</div>
+                        <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:10px;">
+                            ${playerCards.map(c => `<span class="card ${['♥','♦'].includes(c.suit) ? 'red' : 'black'}">${c.display}</span>`).join('')}
+                        </div>
+                    </div>
                 </div>
-                <div style="text-align:center;background:rgba(0,0,0,0.3);padding:15px;border-radius:12px;">
-                    <div style="font-size:14px;opacity:0.6;">ВЫ</div>
-                    <div style="font-size:40px;">🃏</div>
-                    <div style="font-size:24px;font-weight:900;">${player}</div>
-                </div>
-            </div>
-            <div style="text-align:center;font-size:22px;font-weight:900;color:${win > 0 ? '#4caf50' : '#ff4757'};">${msg}</div>
+            `;
+        }
+        function dealCard() {
+            const card = getCard();
+            playerCards.push(card);
+            playerSum = playerCards.reduce((s, c) => s + c.value, 0);
+            if (playerSum > 21) {
+                playerCards = playerCards.map(c => c.rank === 'A' ? {...c, value: 1} : c);
+                playerSum = playerCards.reduce((s, c) => s + c.value, 0);
+            }
+            renderCards();
+        }
+        function dealerTurn() {
+            while (dealerSum < 17) {
+                const card = getCard();
+                dealerCards.push(card);
+                dealerSum = dealerCards.reduce((s, c) => s + c.value, 0);
+                if (dealerSum > 21) {
+                    dealerCards = dealerCards.map(c => c.rank === 'A' ? {...c, value: 1} : c);
+                    dealerSum = dealerCards.reduce((s, c) => s + c.value, 0);
+                }
+                renderCards();
+            }
+            let win = 0;
+            if (playerSum > 21) {
+                win = 0;
+            } else if (dealerSum > 21 || playerSum > dealerSum) {
+                win = bet * 1.5;
+            } else if (playerSum === dealerSum) {
+                win = bet;
+            }
+            balance += win;
+            updateBalance();
+            showResult(`🃏 ВЫ: ${playerSum} | ДИЛЕР: ${dealerSum}  ${win > 0 ? '✅ +' + win : '❌ ПРОИГРЫШ'}`, win > 0);
+        }
+        // Начальная раздача
+        playerCards = [getCard(), getCard()];
+        playerSum = playerCards.reduce((s, c) => s + c.value, 0);
+        dealerCards = [getCard()];
+        dealerSum = dealerCards.reduce((s, c) => s + c.value, 0);
+        renderCards();
+        // Кнопки
+        const controls = document.createElement('div');
+        controls.style.cssText = 'display:flex;gap:10px;margin-top:15px;justify-content:center;';
+        controls.innerHTML = `
+            <button onclick="hitCard()" style="background:#4caf50;padding:10px 25px;border-radius:12px;border:none;color:#fff;font-weight:700;cursor:pointer;font-size:16px;">👆 ЕЩЁ</button>
+            <button onclick="standCard()" style="background:#e94560;padding:10px 25px;border-radius:12px;border:none;color:#fff;font-weight:700;cursor:pointer;font-size:16px;">✋ СТОП</button>
         `;
-        showResult(`🃏 ВЫ: ${player} | ДИЛЕР: ${dealer}  ${win > 0 ? '✅ +' + win : '❌ ПРОИГРЫШ'}`, win > 0);
+        display.appendChild(controls);
+        window.hitCard = function() {
+            if (playerSum < 21 && playerCards.length < maxCards) {
+                dealCard();
+                if (playerSum > 21) {
+                    standCard();
+                }
+            }
+        };
+        window.standCard = function() {
+            controls.innerHTML = '';
+            dealerTurn();
+        };
     };
 
     // ========== КЕНО ==========
     window.play_keno = function() {
         const bet = placeBet(10);
         if (!bet) return;
-
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-
-        const hits = Math.floor(Math.random() * 6);
+        const display = document.getElementById('gameDisplay');
         const numbers = Array.from({length: 20}, () => Math.floor(Math.random() * 80) + 1);
-        
+        const hits = numbers.filter(n => n % 2 === 0).length;
         let win = 0;
-        if (hits >= 4) win = bet * (hits * 3);
-        else if (hits === 3) win = bet * 1.5;
+        if (hits >= 10) win = bet * 5;
+        else if (hits >= 7) win = bet * 2;
+        else if (hits >= 5) win = bet * 1.2;
         balance += win;
         updateBalance();
-
-        container.innerHTML = `
+        display.innerHTML = `
             <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:20px;">
                 ${numbers.map(n => `
-                    <span style="background:rgba(255,255,255,0.05);padding:8px 12px;border-radius:8px;font-size:14px;border:1px solid rgba(255,255,255,0.1);">
+                    <span style="background:${n % 2 === 0 ? 'rgba(76,175,80,0.3)' : 'rgba(255,255,255,0.05)'};
+                         padding:10px 14px;border-radius:8px;font-size:14px;
+                         border:1px solid ${n % 2 === 0 ? 'rgba(76,175,80,0.3)' : 'rgba(255,255,255,0.1)'};
+                         font-weight:${n % 2 === 0 ? '900' : 'normal'};
+                         color:${n % 2 === 0 ? '#4caf50' : '#fff'};">
                         ${n}
                     </span>
                 `).join('')}
             </div>
             <div style="text-align:center;font-size:28px;font-weight:900;color:#f1c40f;">
-                🎯 ПОПАДАНИЙ: ${hits}
-            </div>
-        `;
-        showResult(`🎯 ПОПАДАНИЙ: ${hits}  ${win > 0 ? '✅ +' + win : '❌ ПРОИГРЫШ'}`, win > 0);
-    };
-
-    // ========== ПОКЕР ==========
-    window.play_poker = function() {
-        const bet = placeBet(10);
-        if (!bet) return;
-
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-
-        const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-        const suits = ['♠','♥','♦','♣'];
-        const card = ranks[Math.floor(Math.random() * 13)] + suits[Math.floor(Math.random() * 4)];
-        
-        let win = 0;
-        if (card.startsWith('A')) win = bet * 3;
-        else if (['K','Q','J'].includes(card[0])) win = bet * 1.5;
-        balance += win;
-        updateBalance();
-
-        container.innerHTML = `
-            <div style="text-align:center;padding:30px;">
-                <div style="font-size:100px;">${card}</div>
-                <div style="font-size:18px;opacity:0.6;margin-top:10px;">${card[0] === 'A' ? 'ТУЗ! 🏆' : (['K','Q','J'].includes(card[0]) ? 'СТАРШАЯ! ✨' : 'ОБЫЧНАЯ')}</div>
-            </div>
-        `;
-        showResult(`♠️ ${card}  ${win > 0 ? '✅ +' + win : '❌ ПРОИГРЫШ'}`, win > 0);
-    };
-
-    // ========== КОЛЕСО ФОРТУНЫ ==========
-    function drawWheel(segment = 0) {
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-        container.innerHTML = `
-            <div style="text-align:center;padding:20px;">
-                <div style="font-size:80px;animation:spin 1s ease-in-out;display:inline-block;">🎡</div>
-                <div style="font-size:28px;font-weight:900;color:#f1c40f;margin-top:10px;">
-                    ${segment === 0 ? '⚡' : 'x' + segment}
-                </div>
-            </div>
-        `;
-    }
-
-    window.play_wheel = function() {
-        const bet = placeBet(10);
-        if (!bet) return;
-
-        const container = document.getElementById('gameCanvas');
-        if (!container) return;
-
-        const sectors = ['x0','x1','x2','x3','x5','x10'];
-        let count = 0;
-        const interval = setInterval(() => {
-            const rand = sectors[Math.floor(Math.random() * 6)];
-            const val = parseInt(rand.replace('x','')) || 0;
-            container.innerHTML = `
-                <div style="text-align:center;padding:20px;">
-                    <div style="font-size:80px;animation:spin 0.3s ease-in-out;display:inline-block;">🎡</div>
-                    <div style="font-size:28px;font-weight:900;color:#f1c40f;margin-top:10px;">
-                        ${val === 0 ? '⚡' : 'x' + val}
-                    </div>
-                </div>
-            `;
-            count++;
-            if (count > 15 + Math.floor(Math.random() * 10)) {
-                clearInterval(interval);
-                const final = sectors[Math.floor(Math.random() * 6)];
-                const multiplier = parseInt(final.replace('x','')) || 0;
-                const win = bet * multiplier;
-                balance += win;
-                updateBalance();
-                container.innerHTML = `
-                    <div style="text-align:center;padding:20px;">
-                        <div style="font-size:80px;animation:float 2s ease-in-out infinite;display:inline-block;">🎡</div>
-                        <div style="font-size:28px;font-weight:900;color:#f1c40f;margin-top:10px;">
-                            ${multiplier === 0 ? '💀' : 'x' + multiplier}
-                        </div>
-                    </div>
-                `;
-                showResult(`🎡 ${multiplier === 0 ? '💀 ПРОИГРЫШ' : '✅ +' + win}`, win > 0);
-            }
-        }, 150);
-    };
-
-    // ========== БЫКИ И КОРОВЫ ==========
-    window.play_bulls = function() {
-        const bet = placeBet(10);
-        if (!bet) return;
-
-        const container
